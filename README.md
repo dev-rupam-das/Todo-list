@@ -65,7 +65,7 @@ npm install
 2. Create `.env.local` in the project root:
 
 ```env
-MONGODB_URI=mongodb+srv://your-username:your-password@your-cluster.mongodb.net/todo-app?retryWrites=true&w=majority
+MONGODB_URI=
 ```
 
 3. Start the development server:
