@@ -1,0 +1,61 @@
+.list {
+  display: grid;
+  gap: 14px;
+}
+
+.card {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 20px;
+  border-radius: 26px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.circle,
+.lineShort,
+.lineLong,
+.lineMedium {
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--skeleton-base), var(--skeleton-highlight), var(--skeleton-base));
+  background-size: 200% 100%;
+  animation: shimmer 1.2s linear infinite;
+}
+
+.circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  flex-shrink: 0;
+}
+
+.copy {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+}
+
+.lineShort {
+  width: 30%;
+  height: 14px;
+}
+
+.lineLong {
+  width: 90%;
+  height: 16px;
+}
+
+.lineMedium {
+  width: 55%;
+  height: 14px;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}

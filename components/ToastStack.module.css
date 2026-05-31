@@ -1,0 +1,49 @@
+.stack {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 50;
+  display: grid;
+  gap: 12px;
+  width: min(360px, calc(100vw - 36px));
+}
+
+.successToast,
+.errorToast {
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(18px);
+  animation: slideIn 180ms ease;
+}
+
+.successToast {
+  background: rgba(16, 185, 129, 0.14);
+}
+
+.errorToast {
+  background: rgba(248, 113, 113, 0.14);
+}
+
+.successToast strong,
+.errorToast strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.successToast p,
+.errorToast p {
+  margin: 0;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

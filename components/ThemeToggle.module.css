@@ -1,0 +1,37 @@
+.button,
+.compactButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 136px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: var(--surface-strong);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-soft);
+  transition: transform 160ms ease, border-color 160ms ease;
+}
+
+.compactButton {
+  min-width: 116px;
+  box-shadow: none;
+}
+
+.button:hover,
+.compactButton:hover {
+  transform: translateY(-1px);
+}
+
+.button span,
+.compactButton span {
+  color: var(--muted-text);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.button strong,
+.compactButton strong {
+  font-size: 0.95rem;
+}

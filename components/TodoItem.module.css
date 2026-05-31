@@ -1,0 +1,162 @@
+.card,
+.completedCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  padding: 20px;
+  border-radius: 26px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.card:hover,
+.completedCard:hover {
+  transform: translateY(-2px);
+}
+
+.completedCard {
+  border-color: rgba(16, 185, 129, 0.24);
+}
+
+.content {
+  display: flex;
+  gap: 14px;
+}
+
+.toggle,
+.checkedToggle {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.toggle span,
+.checkedToggle span {
+  display: block;
+  width: 18px;
+  height: 18px;
+  margin: auto;
+  border-radius: 999px;
+}
+
+.toggle span {
+  border: 2px solid rgba(14, 165, 233, 0.55);
+}
+
+.checkedToggle {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.16), rgba(20, 184, 166, 0.18));
+}
+
+.checkedToggle span {
+  background: linear-gradient(135deg, #0ea5e9, #14b8a6);
+}
+
+.copy {
+  min-width: 0;
+}
+
+.topRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.topRow h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.copy p {
+  margin: 8px 0 12px;
+  color: var(--muted-text);
+  word-break: break-word;
+}
+
+.metaRow small {
+  color: var(--muted-text);
+}
+
+.completedBadge,
+.activeBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.completedBadge {
+  background: rgba(16, 185, 129, 0.14);
+  color: #047857;
+}
+
+.activeBadge {
+  background: rgba(56, 189, 248, 0.16);
+  color: #0f766e;
+}
+
+[data-theme="dark"] .completedBadge {
+  color: #86efac;
+}
+
+[data-theme="dark"] .activeBadge {
+  color: #67e8f9;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.editButton,
+.deleteButton {
+  min-width: 92px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-weight: 700;
+}
+
+.editButton {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.deleteButton {
+  border: 0;
+  background: rgba(248, 113, 113, 0.12);
+  color: #dc2626;
+}
+
+[data-theme="dark"] .deleteButton {
+  color: #fca5a5;
+}
+
+@media (max-width: 780px) {
+  .card,
+  .completedCard {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 520px) {
+  .content,
+  .topRow {
+    flex-direction: column;
+  }
+}
