@@ -136,9 +136,22 @@
   margin: 0 0 18px;
 }
 
+.boardHeadingTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 .boardHeading h2 {
   margin: 10px 0 0;
   font-size: 1.35rem;
+}
+
+.syncMeta {
+  color: var(--muted-text);
+  font-size: 0.9rem;
 }
 
 @media (max-width: 1080px) {

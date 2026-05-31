@@ -1,6 +1,6 @@
 "use client";
 
-import { useDeferredValue, useEffect, useState } from "react";
+import { useDeferredValue, useEffect, useRef, useState } from "react";
 import ConfirmDialog from "./ConfirmDialog";
 import EmptyState from "./EmptyState";
 import SkeletonList from "./SkeletonList";
@@ -9,6 +9,14 @@ import TodoForm from "./TodoForm";
 import TodoList from "./TodoList";
 import ToastStack from "./ToastStack";
 import styles from "./TodoShell.module.css";
+
+const LIVE_SYNC_INTERVAL_MS = 5000;
+
+const timeFormatter = new Intl.DateTimeFormat("en-US", {
+  hour: "numeric",
+  minute: "2-digit",
+  second: "2-digit",
+});
 
 function getScopeOptions(isAdmin) {
   if (isAdmin) {
@@ -57,7 +65,11 @@ export default function TodoShell({
   const [pendingDelete, setPendingDelete] = useState(null);
   const [processingId, setProcessingId] = useState("");
   const [toasts, setToasts] = useState([]);
+  const [lastSyncedAt, setLastSyncedAt] = useState(null);
   const deferredSearch = useDeferredValue(search);
+
+  const syncInFlightRef = useRef(false);
+  const pollTimerRef = useRef(null);
 
   const total = todos.length;
   const completed = todos.filter((todo) => todo.completed).length;
@@ -69,25 +81,6 @@ export default function TodoShell({
     completionRate: total ? Math.round((completed / total) * 100) : 0,
   };
 
-  useEffect(() => {
-    fetchTodos();
-  }, [scope, filter, deferredSearch]);
-
-  useEffect(() => {
-    if (!editingTodo) {
-      const nextType = lockedType || (scope === "all" ? currentUser.role === "admin" ? "global" : "personal" : scope);
-      setFormData((current) => ({ ...current, type: nextType }));
-    }
-  }, [scope, editingTodo, lockedType, currentUser.role]);
-
-  function resetForm(nextType) {
-    setFormData({
-      title: "",
-      description: "",
-      type: nextType || lockedType || (scope === "all" ? "global" : scope),
-    });
-  }
-
   function showToast(type, message) {
     const id = crypto.randomUUID();
 
@@ -98,9 +91,20 @@ export default function TodoShell({
     }, 3200);
   }
 
-  async function fetchTodos() {
+  async function fetchTodos({
+    showLoader = true,
+    notifyOnError = true,
+  } = {}) {
+    if (syncInFlightRef.current) {
+      return;
+    }
+
     try {
-      setIsFetching(true);
+      syncInFlightRef.current = true;
+
+      if (showLoader) {
+        setIsFetching(true);
+      }
 
       const params = new URLSearchParams({
         filter,
@@ -118,11 +122,89 @@ export default function TodoShell({
       }
 
       setTodos(result.data);
+      setLastSyncedAt(new Date());
     } catch (error) {
-      showToast("error", error.message || "Unable to load todos.");
+      if (notifyOnError) {
+        showToast("error", error.message || "Unable to load todos.");
+      }
     } finally {
-      setIsFetching(false);
+      syncInFlightRef.current = false;
+
+      if (showLoader) {
+        setIsFetching(false);
+      }
     }
+  }
+
+  useEffect(() => {
+    fetchTodos({
+      showLoader: true,
+      notifyOnError: true,
+    });
+
+    return () => {
+      syncInFlightRef.current = false;
+    };
+  }, [scope, filter, deferredSearch]);
+
+  useEffect(() => {
+    function clearPolling() {
+      if (pollTimerRef.current) {
+        window.clearInterval(pollTimerRef.current);
+        pollTimerRef.current = null;
+      }
+    }
+
+    function pollSilently() {
+      if (document.visibilityState !== "visible") {
+        return;
+      }
+
+      fetchTodos({
+        showLoader: false,
+        notifyOnError: false,
+      });
+    }
+
+    clearPolling();
+    pollTimerRef.current = window.setInterval(pollSilently, LIVE_SYNC_INTERVAL_MS);
+
+    window.addEventListener("focus", pollSilently);
+    document.addEventListener("visibilitychange", pollSilently);
+
+    return () => {
+      clearPolling();
+      window.removeEventListener("focus", pollSilently);
+      document.removeEventListener("visibilitychange", pollSilently);
+    };
+  }, [scope, filter, deferredSearch]);
+
+  useEffect(() => {
+    if (!editingTodo) {
+      const nextType =
+        lockedType ||
+        (scope === "all"
+          ? currentUser.role === "admin"
+            ? "global"
+            : "personal"
+          : scope);
+
+      setFormData((current) => {
+        if (current.type === nextType) {
+          return current;
+        }
+
+        return { ...current, type: nextType };
+      });
+    }
+  }, [scope, editingTodo, lockedType, currentUser.role]);
+
+  function resetForm(nextType) {
+    setFormData({
+      title: "",
+      description: "",
+      type: nextType || lockedType || (scope === "all" ? "global" : scope),
+    });
   }
 
   function onFieldChange(event) {
@@ -342,7 +424,15 @@ export default function TodoShell({
             />
 
             <div className={styles.boardHeading}>
-              <span className={styles.label}>{subtitle}</span>
+              <div className={styles.boardHeadingTop}>
+                <span className={styles.label}>{subtitle}</span>
+                <span className={styles.syncMeta}>
+                  Live sync every 5s
+                  {lastSyncedAt
+                    ? ` - Last sync ${timeFormatter.format(lastSyncedAt)}`
+                    : ""}
+                </span>
+              </div>
               <h2>{heading}</h2>
             </div>
 
