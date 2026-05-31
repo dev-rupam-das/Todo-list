@@ -14,6 +14,9 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata = {
   title: "FlowList | Todo Dashboard",
   description: "A production-ready full-stack todo dashboard built with Next.js and MongoDB.",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({ children }) {

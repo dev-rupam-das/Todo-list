@@ -82,6 +82,12 @@
   color: var(--muted-text);
 }
 
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .completedBadge,
 .activeBadge {
   display: inline-flex;
@@ -125,6 +131,14 @@
   padding: 12px 14px;
   border-radius: 14px;
   font-weight: 700;
+}
+
+.toggle:disabled,
+.checkedToggle:disabled,
+.editButton:disabled,
+.deleteButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .editButton {

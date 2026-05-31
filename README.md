@@ -1,6 +1,6 @@
-# FlowList Todo Dashboard
+# FlowList Todo Management System
 
-A full-stack Todo List application built with Next.js App Router, JavaScript only, MongoDB, and Mongoose.
+A role-based Todo Management System built on Next.js App Router, MongoDB Atlas, and Mongoose. This is the upgraded V2 app, not the original public single-user todo demo.
 
 ## Tech stack
 
@@ -65,41 +65,50 @@ npm install
 2. Create `.env` in the project root:
 
 ```env
-MONGODB_URI=
+MONGODB_URI=mongodb+srv://USERNAME:PASSWORD@CLUSTER/todo-app?appName=flowlist
+MONGODB_DB_NAME=todo-app
+JWT_SECRET=replace-with-a-long-random-secret
 ```
 
 Replace `USERNAME` and `PASSWORD` with your Atlas database user credentials.
 
 If your password contains special characters like `@`, `:`, `/`, or `?`, URL-encode them first.
 
-3. Start the development server:
+3. Seed the first admin account:
+
+```bash
+$env:ADMIN_USERNAME="admin"
+$env:ADMIN_PASSWORD="Admin12345!"
+npm run seed:admin
+```
+
+4. Start the development server:
 
 ```bash
 npm run dev
 ```
 
-4. Open:
+5. Open:
 
 ```text
 http://localhost:3000
 ```
+
+The app now redirects unauthenticated visitors to `/login`.
 
 ## MongoDB setup
 
 1. Create a MongoDB Atlas cluster.
 2. Create a database user with read/write access.
 3. Add your current public IP address in Atlas Network Access.
-4. Copy the connection string from Atlas.
-5. If `mongodb+srv://` fails on your machine, switch to the standard `mongodb://` URI shown above.
-6. Replace the placeholder credentials in `.env`.
-7. Keep the database name in the URI, for example `todo-app`, or set `MONGODB_DB_NAME=todo-app`.
+4. Copy the SRV connection string from Atlas.
+5. Replace the placeholder credentials in `.env`.
+6. Set `MONGODB_DB_NAME=todo-app`.
+7. Set a real `JWT_SECRET`.
 
 ## Atlas troubleshooting
 
-This machine is currently hitting two separate Atlas issues:
-
-1. Node.js fails SRV DNS lookups for the Atlas `mongodb+srv://` URI with `querySrv ECONNREFUSED`.
-2. After bypassing SRV, Atlas still rejects the connection unless your current public IP is allowed.
+This project now supports Atlas SRV connections on machines where Node's default DNS resolver fails. The app resolves SRV/TXT records itself before connecting Mongoose.
 
 Run this to verify the connection:
 
@@ -109,7 +118,7 @@ npm run check:db
 
 Interpret the result correctly:
 
-- `querySrv ECONNREFUSED`: your local Node.js DNS path is refusing Atlas SRV lookups. Use the standard `mongodb://` URI with the explicit host list.
+- `querySrv ECONNREFUSED`: the standalone script is still using a broken DNS path, or your environment is blocking the configured public resolvers.
 - `IP that isn't whitelisted`: Atlas is blocking your network path. Add your current public IP in Atlas `Network Access`.
 - Authentication errors: your database username/password is wrong, or the password was not URL-encoded.
 
@@ -120,29 +129,31 @@ npm run dev
 npm run build
 npm run start
 npm run check:db
+npm run seed:admin
 ```
 
 ## Features included
 
-- Create, read, update, and delete todos
-- Mark todos as completed
-- Filter by all, active, or completed
-- Search by title or description
-- Show creation date
-- Delete confirmation modal
-- Empty state UI
-- Toast notifications
-- Skeleton loaders
+- JWT authentication with HTTP-only cookies
+- No public registration flow
+- Admin and user roles
+- Admin dashboard with user management
+- Personal todos scoped to the owner
+- Global todos visible to all authenticated users
+- Role-based todo permissions
+- Protected pages with login redirect
 - Responsive dashboard layout
 - Dark and light mode toggle
 
 ## Important note
 
-This project will not run until `MONGODB_URI` is set correctly in `.env.local`. That is intentional, because pretending the database is optional would be sloppy.
+This project will not run correctly until `MONGODB_URI` and `JWT_SECRET` are set. That is intentional, because shipping auth without secrets would be idiotic.
 
 ## Verification
 
 - `npm install`
+- `npm run seed:admin`
+- `npm run check:db`
 - `npm run build`
 
 The production build completes successfully on the verified stack above.

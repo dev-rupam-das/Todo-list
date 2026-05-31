@@ -6,9 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "check:db": "node scripts/check-mongo.cjs"
+    "check:db": "node scripts/check-mongo.cjs",
+    "seed:admin": "node scripts/seed-admin.cjs"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "jose": "^6.2.3",
     "mongoose": "^9.6.3",
     "next": "^16.2.6",
     "react": "^19.2.6",

@@ -12,18 +12,28 @@ const TodoSchema = new mongoose.Schema(
       type: String,
       trim: true,
       default: "",
+      maxlength: [500, "Description cannot be longer than 500 characters."],
+    },
+    ownerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "Owner is required."],
+      index: true,
+    },
+    type: {
+      type: String,
+      enum: ["personal", "global"],
+      default: "personal",
+      index: true,
     },
     completed: {
       type: Boolean,
       default: false,
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
   },
   {
     versionKey: false,
+    timestamps: true,
   }
 );
 

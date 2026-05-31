@@ -4,6 +4,7 @@ export default function TodoForm({
   formData,
   isSubmitting,
   isEditing,
+  typeOptions = [],
   onFieldChange,
   onSubmit,
   onCancel,
@@ -33,6 +34,19 @@ export default function TodoForm({
           rows={5}
         />
       </label>
+
+      {typeOptions.length ? (
+        <label className={styles.field}>
+          <span>Scope</span>
+          <select name="type" value={formData.type} onChange={onFieldChange}>
+            {typeOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
 
       <div className={styles.actions}>
         <button type="submit" className={styles.primaryButton} disabled={isSubmitting}>

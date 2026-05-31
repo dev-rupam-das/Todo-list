@@ -1,0 +1,147 @@
+.section {
+  margin-top: 28px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+  gap: 24px;
+}
+
+.panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(20px);
+  border-radius: 28px;
+  padding: 22px;
+}
+
+.header h3 {
+  margin: 10px 0 0;
+}
+
+.badge {
+  display: inline-flex;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--badge-bg);
+  color: var(--accent-strong);
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.form {
+  display: grid;
+  gap: 16px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.field span {
+  font-weight: 700;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-strong);
+  padding: 12px 14px;
+}
+
+.checkbox {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: var(--muted-text);
+}
+
+.actions,
+.rowActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.primaryButton,
+.secondaryButton,
+.inlineButton,
+.deleteButton {
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-weight: 700;
+}
+
+.primaryButton {
+  border: 0;
+  background: linear-gradient(135deg, #0f172a, #0f766e);
+  color: #f8fafc;
+}
+
+.secondaryButton,
+.inlineButton {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.deleteButton {
+  border: 0;
+  background: rgba(248, 113, 113, 0.12);
+  color: var(--danger);
+}
+
+.table {
+  display: grid;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px;
+  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.row p,
+.error,
+.status {
+  margin: 0;
+}
+
+.row p {
+  color: var(--muted-text);
+}
+
+.error {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.status {
+  color: var(--success);
+  font-weight: 600;
+}
+
+@media (max-width: 1080px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .row {
+    flex-direction: column;
+  }
+}

@@ -13,6 +13,9 @@ export default function TodoItem({
   onEdit,
   onToggleCompleted,
 }) {
+  const canEdit = todo.permissions?.canEdit ?? true;
+  const canDelete = todo.permissions?.canDelete ?? true;
+
   return (
     <article className={todo.completed ? styles.completedCard : styles.card}>
       <div className={styles.content}>
@@ -20,7 +23,7 @@ export default function TodoItem({
           type="button"
           className={todo.completed ? styles.checkedToggle : styles.toggle}
           onClick={() => onToggleCompleted(todo)}
-          disabled={isProcessing}
+          disabled={isProcessing || !canEdit}
           aria-label={todo.completed ? "Mark as active" : "Mark as completed"}
         >
           <span />
@@ -37,20 +40,27 @@ export default function TodoItem({
           <p>{todo.description || "No description added."}</p>
 
           <div className={styles.metaRow}>
+            <small>{todo.type === "global" ? "Global" : "Personal"}</small>
+            {todo.ownerUsername ? <small>Owner {todo.ownerUsername}</small> : null}
             <small>Created {formatter.format(new Date(todo.createdAt))}</small>
           </div>
         </div>
       </div>
 
       <div className={styles.actions}>
-        <button type="button" className={styles.editButton} onClick={() => onEdit(todo)}>
+        <button
+          type="button"
+          className={styles.editButton}
+          onClick={() => onEdit(todo)}
+          disabled={!canEdit}
+        >
           Edit
         </button>
         <button
           type="button"
           className={styles.deleteButton}
           onClick={() => onDelete(todo)}
-          disabled={isProcessing}
+          disabled={isProcessing || !canDelete}
         >
           {isProcessing ? "Working..." : "Delete"}
         </button>

@@ -1,0 +1,52 @@
+.page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.glow {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at top left, rgba(14, 165, 233, 0.18), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(249, 115, 22, 0.12), transparent 30%);
+  pointer-events: none;
+}
+
+.card {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 520px);
+  display: grid;
+  gap: 24px;
+  padding: 28px;
+  border-radius: 32px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(20px);
+}
+
+.badge {
+  display: inline-flex;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--badge-bg);
+  color: var(--accent-strong);
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.copy h1 {
+  margin: 12px 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 7vw, 4rem);
+}
+
+.copy p {
+  color: var(--muted-text);
+  line-height: 1.7;
+}

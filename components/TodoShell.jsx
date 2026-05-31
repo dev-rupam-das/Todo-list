@@ -10,14 +10,45 @@ import TodoList from "./TodoList";
 import ToastStack from "./ToastStack";
 import styles from "./TodoShell.module.css";
 
-const initialFormState = {
-  title: "",
-  description: "",
-};
+function getScopeOptions(isAdmin) {
+  if (isAdmin) {
+    return [
+      { value: "all", label: "All todos" },
+      { value: "personal", label: "Personal" },
+      { value: "global", label: "Global" },
+    ];
+  }
 
-export default function TodoShell() {
+  return [
+    { value: "personal", label: "Personal Todos" },
+    { value: "global", label: "Global Todos" },
+  ];
+}
+
+export default function TodoShell({
+  currentUser,
+  defaultScope = "personal",
+  heading = "Todo board",
+  subtitle = "Control center",
+  showScopeTabs = true,
+  lockedType = "",
+}) {
+  const isAdmin = currentUser.role === "admin";
+  const scopeOptions = getScopeOptions(isAdmin);
+  const typeOptions = lockedType
+    ? []
+    : [
+        { value: "personal", label: "Personal" },
+        { value: "global", label: "Global" },
+      ];
+
   const [todos, setTodos] = useState([]);
-  const [formData, setFormData] = useState(initialFormState);
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    type: lockedType || (defaultScope === "all" ? "global" : defaultScope),
+  });
+  const [scope, setScope] = useState(defaultScope);
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [isFetching, setIsFetching] = useState(true);
@@ -40,7 +71,22 @@ export default function TodoShell() {
 
   useEffect(() => {
     fetchTodos();
-  }, [filter, deferredSearch]);
+  }, [scope, filter, deferredSearch]);
+
+  useEffect(() => {
+    if (!editingTodo) {
+      const nextType = lockedType || (scope === "all" ? currentUser.role === "admin" ? "global" : "personal" : scope);
+      setFormData((current) => ({ ...current, type: nextType }));
+    }
+  }, [scope, editingTodo, lockedType, currentUser.role]);
+
+  function resetForm(nextType) {
+    setFormData({
+      title: "",
+      description: "",
+      type: nextType || lockedType || (scope === "all" ? "global" : scope),
+    });
+  }
 
   function showToast(type, message) {
     const id = crypto.randomUUID();
@@ -59,6 +105,7 @@ export default function TodoShell() {
       const params = new URLSearchParams({
         filter,
         search: deferredSearch,
+        scope,
       });
 
       const response = await fetch(`/api/todos?${params.toString()}`, {
@@ -80,6 +127,11 @@ export default function TodoShell() {
 
   function onFieldChange(event) {
     const { name, value } = event.target;
+
+    if (lockedType && name === "type") {
+      return;
+    }
+
     setFormData((current) => ({ ...current, [name]: value }));
   }
 
@@ -89,7 +141,7 @@ export default function TodoShell() {
     try {
       setIsSubmitting(true);
 
-      const method = editingTodo ? "PATCH" : "POST";
+      const method = editingTodo ? "PUT" : "POST";
       const endpoint = editingTodo ? `/api/todos/${editingTodo._id}` : "/api/todos";
 
       const response = await fetch(endpoint, {
@@ -106,7 +158,7 @@ export default function TodoShell() {
         throw new Error(result.message || "Unable to save todo.");
       }
 
-      setFormData(initialFormState);
+      resetForm();
       setEditingTodo(null);
       showToast("success", editingTodo ? "Todo updated." : "Todo created.");
       await fetchTodos();
@@ -118,24 +170,35 @@ export default function TodoShell() {
   }
 
   function beginEdit(todo) {
+    if (!todo.permissions?.canEdit) {
+      showToast("error", "You cannot edit this todo.");
+      return;
+    }
+
     setEditingTodo(todo);
     setFormData({
       title: todo.title,
       description: todo.description || "",
+      type: lockedType || todo.type,
     });
   }
 
   function cancelEdit() {
     setEditingTodo(null);
-    setFormData(initialFormState);
+    resetForm();
   }
 
   async function toggleCompleted(todo) {
+    if (!todo.permissions?.canEdit) {
+      showToast("error", "You cannot update this todo.");
+      return;
+    }
+
     try {
       setProcessingId(todo._id);
 
       const response = await fetch(`/api/todos/${todo._id}`, {
-        method: "PATCH",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
@@ -200,6 +263,11 @@ export default function TodoShell() {
               <div>
                 <span className={styles.label}>Write mode</span>
                 <h2>{editingTodo ? "Edit task" : "Create a new task"}</h2>
+                <p className={styles.helperText}>
+                  {isAdmin
+                    ? "Admins can create and manage both personal and global work."
+                    : "Users can manage personal work privately and global work collaboratively."}
+                </p>
               </div>
             </div>
 
@@ -207,6 +275,7 @@ export default function TodoShell() {
               formData={formData}
               isSubmitting={isSubmitting}
               isEditing={Boolean(editingTodo)}
+              typeOptions={typeOptions}
               onFieldChange={onFieldChange}
               onSubmit={handleSubmit}
               onCancel={cancelEdit}
@@ -217,7 +286,7 @@ export default function TodoShell() {
             <div className={styles.cardHeader}>
               <div>
                 <span className={styles.label}>Performance</span>
-                <h2>Task velocity</h2>
+                <h2>Visible workload</h2>
               </div>
             </div>
 
@@ -250,6 +319,21 @@ export default function TodoShell() {
 
         <div className={styles.rightColumn}>
           <article className={styles.boardCard}>
+            {showScopeTabs ? (
+              <div className={styles.scopeTabs}>
+                {scopeOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    className={scope === option.value ? styles.activeScopeTab : styles.scopeTab}
+                    onClick={() => setScope(option.value)}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
             <TodoFilters
               filter={filter}
               search={search}
@@ -257,12 +341,17 @@ export default function TodoShell() {
               onSearchChange={setSearch}
             />
 
+            <div className={styles.boardHeading}>
+              <span className={styles.label}>{subtitle}</span>
+              <h2>{heading}</h2>
+            </div>
+
             {isFetching ? (
               <SkeletonList />
             ) : todos.length === 0 ? (
               <EmptyState
                 title="No matching tasks"
-                description="Either you have nothing to do, or your filter is excluding everything. Fix one of those."
+                description="Either nothing exists in this scope yet, or your filters are too narrow."
               />
             ) : (
               <TodoList

@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
 import mongoose from "mongoose";
+import { requireApiUser, apiErrorResponse } from "../../../../lib/api-auth";
 import { connectMongoDB } from "../../../../lib/mongodb";
+import { canManageTodo, canViewTodo, serializeTodo } from "../../../../lib/todos";
 import Todo from "../../../../models/Todo";
 
 function isValidId(id) {
@@ -9,43 +10,65 @@ function isValidId(id) {
 
 export async function GET(_, { params }) {
   try {
+    const user = await requireApiUser();
     await connectMongoDB();
     const { id } = await params;
 
     if (!isValidId(id)) {
-      return NextResponse.json(
+      return Response.json(
         { success: false, message: "Invalid todo id." },
         { status: 400 }
       );
     }
 
-    const todo = await Todo.findById(id).lean();
+    const todo = await Todo.findById(id).populate("ownerId", "username").lean();
 
     if (!todo) {
-      return NextResponse.json(
+      return Response.json(
         { success: false, message: "Todo not found." },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ success: true, data: todo });
+    if (!canViewTodo(user, todo)) {
+      return Response.json(
+        { success: false, message: "403 Access Denied" },
+        { status: 403 }
+      );
+    }
+
+    return Response.json({ success: true, data: serializeTodo(todo, user) });
   } catch (error) {
-    return NextResponse.json(
-      { success: false, message: error.message || "Failed to fetch todo." },
-      { status: 500 }
-    );
+    return apiErrorResponse(error, "Failed to fetch todo.");
   }
 }
 
-export async function PATCH(request, { params }) {
+export async function PUT(request, { params }) {
   try {
+    const user = await requireApiUser();
     await connectMongoDB();
     const { id } = await params;
 
     if (!isValidId(id)) {
-      return NextResponse.json(
+      return Response.json(
         { success: false, message: "Invalid todo id." },
         { status: 400 }
+      );
+    }
+
+    const existingTodo = await Todo.findById(id);
+
+    if (!existingTodo) {
+      return Response.json(
+        { success: false, message: "Todo not found." },
+        { status: 404 }
+      );
+    }
+
+    if (!canManageTodo(user, existingTodo)) {
+      return Response.json(
+        { success: false, message: "403 Access Denied" },
+        { status: 403 }
       );
     }
 
@@ -56,7 +79,7 @@ export async function PATCH(request, { params }) {
       const title = body.title.trim();
 
       if (!title) {
-        return NextResponse.json(
+        return Response.json(
           { success: false, message: "Title cannot be empty." },
           { status: 400 }
         );
@@ -69,6 +92,10 @@ export async function PATCH(request, { params }) {
       updateData.description = body.description.trim();
     }
 
+    if (typeof body.type === "string") {
+      updateData.type = body.type === "global" ? "global" : "personal";
+    }
+
     if (typeof body.completed === "boolean") {
       updateData.completed = body.completed;
     }
@@ -76,50 +103,51 @@ export async function PATCH(request, { params }) {
     const todo = await Todo.findByIdAndUpdate(id, updateData, {
       new: true,
       runValidators: true,
-    }).lean();
+    })
+      .populate("ownerId", "username")
+      .lean();
 
-    if (!todo) {
-      return NextResponse.json(
-        { success: false, message: "Todo not found." },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({ success: true, data: todo });
+    return Response.json({ success: true, data: serializeTodo(todo, user) });
   } catch (error) {
-    return NextResponse.json(
-      { success: false, message: error.message || "Failed to update todo." },
-      { status: 500 }
-    );
+    return apiErrorResponse(error, "Failed to update todo.");
   }
 }
 
+export const PATCH = PUT;
+
 export async function DELETE(_, { params }) {
   try {
+    const user = await requireApiUser();
     await connectMongoDB();
     const { id } = await params;
 
     if (!isValidId(id)) {
-      return NextResponse.json(
+      return Response.json(
         { success: false, message: "Invalid todo id." },
         { status: 400 }
       );
     }
 
-    const todo = await Todo.findByIdAndDelete(id).lean();
+    const existingTodo = await Todo.findById(id);
 
-    if (!todo) {
-      return NextResponse.json(
+    if (!existingTodo) {
+      return Response.json(
         { success: false, message: "Todo not found." },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ success: true, message: "Todo deleted successfully." });
+    if (!canManageTodo(user, existingTodo)) {
+      return Response.json(
+        { success: false, message: "403 Access Denied" },
+        { status: 403 }
+      );
+    }
+
+    await Todo.findByIdAndDelete(id);
+
+    return Response.json({ success: true, message: "Todo deleted successfully." });
   } catch (error) {
-    return NextResponse.json(
-      { success: false, message: error.message || "Failed to delete todo." },
-      { status: 500 }
-    );
+    return apiErrorResponse(error, "Failed to delete todo.");
   }
 }

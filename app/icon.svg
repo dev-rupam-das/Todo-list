@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="flowlist-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0ea5e9" />
+      <stop offset="100%" stop-color="#0f766e" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="18" fill="#0f172a" />
+  <path
+    d="M18 20h28a4 4 0 0 1 4 4v3a4 4 0 0 1-4 4H18a4 4 0 0 1-4-4v-3a4 4 0 0 1 4-4Zm0 15h18a4 4 0 0 1 4 4v3a4 4 0 0 1-4 4H18a4 4 0 0 1-4-4v-3a4 4 0 0 1 4-4Z"
+    fill="url(#flowlist-gradient)"
+  />
+  <circle cx="44" cy="41" r="6" fill="#f8fafc" />
+</svg>
