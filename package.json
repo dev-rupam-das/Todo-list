@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "check:db": "node scripts/check-mongo.cjs"
   },
   "dependencies": {
     "mongoose": "^9.6.3",

@@ -62,11 +62,15 @@ public/
 npm install
 ```
 
-2. Create `.env.local` in the project root:
+2. Create `.env` in the project root:
 
 ```env
 MONGODB_URI=
 ```
+
+Replace `USERNAME` and `PASSWORD` with your Atlas database user credentials.
+
+If your password contains special characters like `@`, `:`, `/`, or `?`, URL-encode them first.
 
 3. Start the development server:
 
@@ -84,10 +88,30 @@ http://localhost:3000
 
 1. Create a MongoDB Atlas cluster.
 2. Create a database user with read/write access.
-3. Add your current IP address in Atlas Network Access.
+3. Add your current public IP address in Atlas Network Access.
 4. Copy the connection string from Atlas.
-5. Replace the placeholder credentials in `.env.local`.
-6. Keep the database name in the URI, for example `todo-app`.
+5. If `mongodb+srv://` fails on your machine, switch to the standard `mongodb://` URI shown above.
+6. Replace the placeholder credentials in `.env`.
+7. Keep the database name in the URI, for example `todo-app`, or set `MONGODB_DB_NAME=todo-app`.
+
+## Atlas troubleshooting
+
+This machine is currently hitting two separate Atlas issues:
+
+1. Node.js fails SRV DNS lookups for the Atlas `mongodb+srv://` URI with `querySrv ECONNREFUSED`.
+2. After bypassing SRV, Atlas still rejects the connection unless your current public IP is allowed.
+
+Run this to verify the connection:
+
+```bash
+npm run check:db
+```
+
+Interpret the result correctly:
+
+- `querySrv ECONNREFUSED`: your local Node.js DNS path is refusing Atlas SRV lookups. Use the standard `mongodb://` URI with the explicit host list.
+- `IP that isn't whitelisted`: Atlas is blocking your network path. Add your current public IP in Atlas `Network Access`.
+- Authentication errors: your database username/password is wrong, or the password was not URL-encoded.
 
 ## Available scripts
 
@@ -95,6 +119,7 @@ http://localhost:3000
 npm run dev
 npm run build
 npm run start
+npm run check:db
 ```
 
 ## Features included
